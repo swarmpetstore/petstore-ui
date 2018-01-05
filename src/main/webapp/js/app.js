@@ -76,9 +76,15 @@ var Cart = React.createClass({
 });
 
 var GuestHeader = React.createClass({
+  onClick: function() {
+    console.log("BEDZIE TEN LOGIN?");
+    keycloak.login();
+    return false;
+  },
    render: function() {
+      console.log("RENDERUJE GESTA");
       return(
-       <li><a href="#"><span className="glyphicon glyphicon-log-in"></span> Login</a></li>
+       <li><a href="#" onClick={this.onClick}><span className="glyphicon glyphicon-log-in"></span> Login</a></li>
       );
     }
   });
