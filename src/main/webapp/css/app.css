@@ -18,6 +18,14 @@
  text-align:	center;
 }
 
+.pet-grid {
+    margin-top:10px;
+    border: #cdcdcd medium solid;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+}
+
 }
 
 #booker-logo {

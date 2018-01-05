@@ -7,12 +7,13 @@ var Route = Router.Route;
 var Item = React.createClass({
   render: function() {
     var item = this.props.item
+    console.log("MAM TAKIEGO ITEMA "+item)
     return (
-      <div className="pet">
+      <div className="col-md-3">
       <h3>{item.name}</h3>
       {item.description}<br/>
       price: {item.price}<br/>
-      <button>Add to cart</button>
+      <button className="btn btn-default">Add to cart</button>
       </div>
     );
   }
@@ -20,14 +21,8 @@ var Item = React.createClass({
 
 var Catalog = React.createClass({
   render: function() {
-    console.log("RENDER CHOCIAZ :(")
-    console.log(this.state.items)
-    this.state.items.map(function(e){
-        console.log(e.name);
-    })
     return (
-      <div>
-        <h1>Pets</h1>
+      <div className="container">
         {
           this.state.items.map(function(e) {
             return (
@@ -48,7 +43,7 @@ var Catalog = React.createClass({
 
     componentDidMount: function() {
     console.log("MONTUJE?");
-       fetch('http://petstore-service-petstore.192.168.42.229.nip.io/pet', {method: 'get'})
+       fetch('http://petstore-service-petstore.192.168.42.169.nip.io/pet', {method: 'get'})
        .then(
             d => {
                 console.log(d)
@@ -80,50 +75,56 @@ var Cart = React.createClass({
     }
 });
 
-var Logger = React.createClass({
-  onClick: function() {
-    console.log("bede logowal");
-    keycloak.login();
-  },
-  render: function() {
-    return (
-      <a href="" onClick={this.onClick}>Login</a>
-    )
-  }
-});
+var GuestHeader = React.createClass({
+   render: function() {
+      return(
+       <li><a href="#"><span className="glyphicon glyphicon-log-in"></span> Login</a></li>
+      );
+    }
+  });
+
+var UserHeader = React.createClass({
+   render: function() {
+      return(
+      <div>
+      <li><a href="/account"><span className="glyphicon glyphicon-shopping-cart"></span> Login</a></li>
+      <li><a href="/cart"><span className="glyphicon glyphicon-shopping-cart"></span> Login</a></li>;
+      </div>
+      );
+    }
+  });
 
 var Header = React.createClass({
+
     render: function() {
+        var rightHeader;
+        if(keycloak && keycloak.authenticated){
+            rightHeader = <UserHeader/>
+        } else {
+            rightHeader = <GuestHeader/>
+        }
         return (
-            <div id = "header" nclassName = "row" >
-                <h1>SWARM PETSTORE</h1>
-                <ul className = "inline-list" >
-                    <li> <Link to = "catalog" > Catalog < /Link></li>
-                    <li> <Link to = "cart" > Cart < /Link></li>
-                </ul>
-                <Logger/>
-            </div >
+          <nav className="navbar navbar-default">
+            <div className="navbar-header">
+              <h1>Cloud petstore</h1>
+            </div>
+            <div className="collapse navbar-collapse" id="myNavbar">
+              <ul className="nav navbar-nav navbar-right">
+                {rightHeader}
+              </ul>
+            </div>
+          </nav>
         );
     }
 });
 
-var Footer = React.createClass({
-    render: function() {
-        return (
-            <div id = "header" className = "row" >
-            <h1>FOOTER</h1>
-            </div>
-        );
-    }
-});
 
 var App = React.createClass({
     render: function() {
         return (
             <div>
-            < Header / >
-            <RouteHandler / >
-            <Footer / >
+              <Header/>
+              <RouteHandler/>
             </div>
         )
     }
