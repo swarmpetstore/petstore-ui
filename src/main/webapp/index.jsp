@@ -9,7 +9,7 @@
       <script src="https://cdnjs.cloudflare.com/ajax/libs/react-router/0.13.3/ReactRouter.js"></script>
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-      <script src="http://keycloak-petstore.192.168.42.169.nip.io/auth/js/keycloak.js"></script>
+      <script src="http://keycloak-petstore.192.168.42.229.nip.io/auth/js/keycloak.js"></script>
       <script language="javascript">
          if (typeof Keycloak === 'function') {
            keycloak = new Keycloak('/keycloak.json');

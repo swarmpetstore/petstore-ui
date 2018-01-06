@@ -43,7 +43,7 @@ var Catalog = React.createClass({
 
     componentDidMount: function() {
     console.log("MONTUJE?");
-       fetch('http://petstore-service-petstore.192.168.42.169.nip.io/pet', {method: 'get'})
+       fetch('http://petstore-service-petstore.192.168.42.229.nip.io/pet', {method: 'get'})
        .then(
             d => {
                 console.log(d)
