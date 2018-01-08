@@ -13,11 +13,9 @@
       <script language="javascript">
          if (typeof Keycloak === 'function') {
            keycloak = new Keycloak('/keycloak.json');
-           console.log("NO MAM TEGO KLOKASA");
          } else {
            alert('No keycloak is running. Cannot continue.');
          }
-         console.log("KEYCLOAK TO "+keycloak);
       </script>
       <script	type="text/babel" src="js/app.js"></script>
    </head>
