@@ -6,9 +6,19 @@ var Route = Router.Route;
 
 var clientApiGateway = "http://petstore-service-petstore.192.168.42.229.nip.io";
 
-function post(path, data) {
+function post(path, data, queryParams) {
     console.log("POSTUJE DATE "+JSON.stringify(data))
     console.log("NA ADRES "+path)
+
+    for (var qp in queryParams) {
+        if (!queryParams.hasOwnProperty(qp)) {
+            continue;
+        }
+        path+="?"+qp+"="+queryParams[qp]
+    }
+
+    console.log("ADRES Z PARAMETRAMI "+path);
+
     fetch(clientApiGateway+"/"+path,
     {
         headers: {
@@ -28,30 +38,62 @@ function post(path, data) {
                 });
 }
 
+function remove(path) {
+    remove(path, {})
+}
+
+function remove(path, queryParams) {
+    console.log("NA ADRES "+path)
+
+    for (var qp in queryParams) {
+        if (!queryParams.hasOwnProperty(qp)) {
+            continue;
+        }
+        path+="?"+qp+"="+queryParams[qp]
+    }
+
+    console.log("ADRES Z PARAMETRAMI "+path);
+
+    fetch(clientApiGateway+"/"+path,
+    {
+        headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+        },
+        method: "DELETE",
+       }).
+        catch(function(err) {
+                     console.log("BLAD POLECIAL!!!")
+                    console.log(err.stack)
+                });
+}
+
 var Item = React.createClass({
 getInitialState:	function()	{
     return	{ quantity: 1}
   },
-  onAddToCart: function(){
+    handleChange: function(event) {
+      this.setState({quantity: event.target.value});
+    },
+     onAddToCart: function(event){
     if(keycloak.authenticated){
         var item = this.props.item
         console.log("USER PROFILE TO "+JSON.stringify(userInfo));
         console.log("ITEM TO "+JSON.stringify(item))
         var cartItem = {itemId : item.itemId, quantity: this.state.quantity};
         console.log("POSTUJE KURWA "+JSON.stringify(cartItem))
-        post("cart/"+userInfo.sub, cartItem);
+        post("cart/"+userInfo.sub, cartItem,{additive: true});
     } else {
         alert("You must be logged in to add the item to the cart");
     }
-  },
-    handleChange(event) {
-      this.setState({quantity: event.target.value});
-    },
+        event.preventDefault();
+      },
   render: function() {
     var item = this.props.item
     console.log("MAM TAKIEGO ITEMA "+JSON.stringify(item))
     return (
 <div className="col-md-3">
+<div className="card h-100">
 <div className="row">
    <h3>{item.name}</h3>
 </div>
@@ -74,10 +116,11 @@ getInitialState:	function()	{
                </select>
             </div>
             <div class="col-xs-7">
-                <input type="submit" className="btn btn-default" onClick={this.onAddToCart}>Add to cart</button>
+                <input type="submit" className="btn btn-default" value="Add to cart"/>
              </div>
    </form>
 
+</div>
 </div>
 </div>
     )}
@@ -130,27 +173,53 @@ var Catalog = React.createClass({
 });
 
 var Cart = React.createClass({
+    getInitialState:	function()	{
+        return	{
+            items:	[]
+        };
+      },
+      load: function(){
+          console.log(clientApiGateway+'/cart/'+userInfo.sub)
+           fetch(clientApiGateway+'/cart/'+userInfo.sub, {method: 'get'})
+           .then(d => {return d.json()})
+           .then(d => {
+                          var total = 0;
+                          for(var i =0;i<d.length;i++){
+                            total+= d[i].price*d[i].quantity
+                          }
+                          this.setState({items: d, total: total})
+                      })
+           .catch(function(err) {
+                console.log("PIES")
+               console.log(err.stack)
+           });
+      },
+        componentDidMount: function() {
+            this.load();
+        },
     render: function() {
-    console.log("RENDERUJE CARTA");
         return (
         <div className="container">
+        <div className="col-md-3"/>
+        <div className="col-md-6">
 	<table id="cart" className="table table-hover table-condensed">
     				<thead>
 						<tr>
-							<th width="70%" className="text-center">Product</th>
-							<th width="10%" className="text-center">Price</th>
-							<th width="10%" className="text-center">Quantity</th>
-							<th width="10%" className="text-center">Subtotal</th>
+							<th width="60%" className="text-center">Product</th>
+							<th width="15%" className="text-center">Price</th>
+							<th width="5%" className="text-center">Quantity</th>
+							<th width="5%" className="text-center"/>
+							<th width="15%" className="text-center">Subtotal</th>
 						</tr>
 					</thead>
 					<tbody>
-                            {
-                              this.state.items.map(function(e) {
-                                return (
-                                  <CartItem key={e.itemId} item={e}/>
-                                );
+                      {
+                              this.state.items.map(e => {
+                              return (
+                                  <CartItem key={e.itemId} item={e} reloadParent={this.load.bind(this)}/>
+                                  );
                               })
-                            }
+                      }
 					</tbody>
 					<tfoot>
 						<tr className="visible-xs">
@@ -159,42 +228,38 @@ var Cart = React.createClass({
 						<tr>
 							<td><Link to="catalog" className="btn btn-default">Continue shopping</Link></td>
 							<td colspan="2" className="hidden-xs"></td>
-							<td className="hidden-xs text-center"><strong>Total $1.99</strong></td>
-							<td><Link to="catalog" className="btn btn-default">Checkout</Link></td>
+							<td className="hidden-xs text-center"><strong>Total {this.state.total}</strong></td>
+							<td><Link to="catalog" className="btn btn-default">Buy</Link></td>
 						</tr>
 					</tfoot>
 				</table>
 				</div>
+				<div className="col-md-3"/>
+				</div>
         );
-    },
-
-      getInitialState:	function()	{
-        return	{
-            items:	[]
-        };
-      },
+    }
 
 
-        componentDidMount: function() {
-          console.log(clientApiGateway+'/cart/'+userInfo.sub)
-           fetch(clientApiGateway+'/cart/'+userInfo.sub, {method: 'get'})
-           .then(d => {
-               return d.json()
-           })
-           .then(d => {
-                          console.log("BAJOBONGO "+d)
-                          this.setState({items: d})
-                      })
-           .catch(function(err) {
-                console.log("PIES")
-               console.log(err.stack)
-           });
-        }
 });
 
 var CartItem = React.createClass({
+  getInitialState:	function()	{
+    return	{ item: this.props.item}
+  },
+  handleChange(event) {
+  var item = this.state.item
+  item.quantity = event.target.value
+    this.setState({item: item});
+    post("cart/"+userInfo.sub, {itemId : item.itemId, quantity: item.quantity},{additive: false});
+    this.props.reloadParent();
+  },
+   removeItem() {
+   var item = this.state.item
+      remove("cart/"+userInfo.sub+"/"+item.itemId);
+      this.props.reloadParent();
+    },
   render: function() {
-    var item = this.props.item
+    var item = this.state.item
     console.log("MAM TAKIEGO ITEMA "+JSON.stringify(item))
     return (
 						<tr>
@@ -202,7 +267,12 @@ var CartItem = React.createClass({
 								<h3>{item.name}</h3>
 							</td>
 							<td data-th="Price" className="text-center">{item.price}$</td>
-							<td data-th="Quantity" className="text-center"> {item.quantity}</td>
+							<td data-th="Quantity" className="text-center">
+							    <input type="number" className="form-control" value={item.quantity} onChange={this.handleChange} />
+							</td>
+							<td className="text-center">
+                                <span className="glyphicon glyphicon-remove" onClick={this.removeItem}/>
+                            </td>
 							<td data-th="Subtotal" className="text-center">{item.price * item.quantity}$</td>
 						</tr>
     );
